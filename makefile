@@ -1,8 +1,8 @@
 CC=$(CROSS_COMPILE)gcc
 all:
-	$(CC) client.c -o client
-	$(CC) server.c -o server
+	$(CC) -pthread clientFolder/client.c -o clientFolder/client
+	$(CC) -pthread serverFolder/server.c -o serverFolder/server
 clean:
-	rm -rf * client
-	rm -ff * server
+	rm -rf * clientFolder/client
+	rm -ff * serverFolder/server
 

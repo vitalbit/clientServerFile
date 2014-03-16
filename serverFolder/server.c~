@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,12 +12,16 @@ struct sockFile
 
 void* ThreadFunc (void* param)
 {
-    long fileSize = 1024;
-    char *content = (char*) malloc(fileSize+1);
+    long fileSize = 0;
+    char *content;
     struct sockFile *sf = (struct sockFile*)param;
     FILE *fp;
     fp = fopen(sf->filename, "r");
-    fread_s(content, fileSize, sizeof(char), fileSize, fp);
+    fseek (fp, 0 , SEEK_END);
+    fileSize = ftell (fp);
+    rewind (fp);
+    content = (char*) malloc(fileSize+1);
+    fread(content, 1, fileSize, fp);
     send(sf->sock, content, fileSize, 0);
     free(content);
     free(sf);
@@ -48,6 +53,7 @@ int main()
     while(1)
     {
         struct sockFile *sf;
+        pthread_t thread_id;
         sock = accept(listener, NULL, NULL);
         sf = (struct sockFile*) malloc (sizeof(struct sockFile));
         if(sock < 0)
@@ -56,7 +62,9 @@ int main()
             exit(3);
         }
         bytes_read = recv(sock, filename, 1024, 0);
-        rc = pthread_create(NULL, NULL, ThreadFunc, (void*)&sf[0]);
+        sf[0].sock = sock;
+        strcpy(sf[0].filename, filename);
+        rc = pthread_create(&thread_id, NULL, ThreadFunc, (void*)&sf[0]);
         if (rc) printf("Can't create thread!");
     }   
     return 0;
