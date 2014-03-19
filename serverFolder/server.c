@@ -6,66 +6,80 @@
 
 struct sockFile
 {
-    int sock;
-    char filename[1024];
+  int sock;
+  char filename[1024];
 };
 
 void* ThreadFunc (void* param)
 {
-    long fileSize = 0;
-    char *content;
-    struct sockFile *sf = (struct sockFile*)param;
-    FILE *fp;
-    fp = fopen(sf->filename, "r");
-    fseek (fp, 0 , SEEK_END);
-    fileSize = ftell (fp);
-    rewind (fp);
-    content = (char*) malloc(fileSize+1);
-    fread(content, 1, fileSize, fp);
-    send(sf->sock, content, fileSize, 0);
-    free(content);
-    free(sf);
-    close(sf->sock);
-    fclose(fp);    
+  long fileSize = 0;
+  char *content;
+  struct sockFile *sf = (struct sockFile*)param;
+  FILE *fp;
+
+  fp = fopen(sf->filename, "r");
+  fseek (fp, 0 , SEEK_END);
+
+  fileSize = ftell (fp);
+  rewind (fp);
+
+  content = (char*) malloc(fileSize+1);
+  fread(content, 1, fileSize, fp);
+
+  send(sf->sock, content, fileSize, 0);
+  free(content);
+  free(sf);
+  close(sf->sock);
+  fclose(fp);
 }
 
 int main()
 {
-    int sock, listener, rc;
-    struct sockaddr_in addr;
-    char filename[1024];
-    int bytes_read;
-    listener = socket(AF_INET, SOCK_STREAM, 0);
-    if(listener < 0)
-    {
-        perror("socket");
-        exit(1);
-    }
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(3425);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if(bind(listener, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-    {
-        perror("bind");
-        exit(2);
-    }
-    listen(listener, 1);
-    while(1)
-    {
-        struct sockFile *sf;
-        pthread_t thread_id;
-        sock = accept(listener, NULL, NULL);
-        sf = (struct sockFile*) malloc (sizeof(struct sockFile));
-        if(sock < 0)
-        {
-            perror("accept");
-            exit(3);
-        }
-        bytes_read = recv(sock, filename, 1024, 0);
-        sf[0].sock = sock;
-        strcpy(sf[0].filename, filename);
-        rc = pthread_create(&thread_id, NULL, ThreadFunc, (void*)&sf[0]);
-        if (rc) printf("Can't create thread!");
-    }   
-    return 0;
+  int sock, listener, rc;
+  struct sockaddr_in addr;
+  char filename[1024];
+  int bytes_read;
+
+  listener = socket(AF_INET, SOCK_STREAM, 0);
+  if(listener < 0)
+  {
+      perror("socket");
+      exit(1);
+  }
+
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(3425);
+  addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+  if(bind(listener, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+  {
+      perror("bind");
+      exit(2);
+  }
+
+  listen(listener, 1);
+
+  while(1)
+  {
+      struct sockFile *sf;
+      pthread_t thread_id;
+
+      sock = accept(listener, NULL, NULL);
+      sf = (struct sockFile*) malloc (sizeof(struct sockFile));
+
+      if(sock < 0)
+      {
+          perror("accept");
+          exit(3);
+      }
+      bytes_read = recv(sock, filename, 1024, 0);
+      sf[0].sock = sock;
+
+      strcpy(sf[0].filename, filename);
+
+      rc = pthread_create(&thread_id, NULL, ThreadFunc, (void*)&sf[0]);
+      if (rc)
+          printf("Can't create thread!");
+  }
+  return 0;
 }
