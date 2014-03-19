@@ -4,5 +4,3 @@ all:
 	$(CC) -pthread serverFolder/server.c -o serverFolder/server
 clean:
 	rm -rf clientFolder/client serverFolder/server
-
-
