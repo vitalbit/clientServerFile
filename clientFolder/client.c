@@ -3,8 +3,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-char buf[sizeof(message)];
-
 int main()
 {
     int sock, r;
