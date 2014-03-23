@@ -26,7 +26,7 @@ void* ThreadFunc (void* param)
   fileSize = ftell (fp);
   rewind (fp);
 
-  itoa(fileSize, fileSizeChar, 10);
+  snprintf(fileSizeChar, sizeof(fileSizeChar), "%ld", fileSize);
   send(sf->sock, fileSizeChar, 1024, 0);
 
   while (sizeCheck < fileSize)
