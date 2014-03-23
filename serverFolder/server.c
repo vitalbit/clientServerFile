@@ -4,6 +4,8 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
+const int readSize = 1024;
+
 struct sockFile
 {
   int sock;
@@ -12,8 +14,9 @@ struct sockFile
 
 void* ThreadFunc (void* param)
 {
-  long fileSize = 0;
-  char *content;
+  long fileSize = 0, sizeCheck = 0;
+  char content[readSize];
+  char fileSizeChar[1024];
   struct sockFile *sf = (struct sockFile*)param;
   FILE *fp;
 
@@ -23,13 +26,19 @@ void* ThreadFunc (void* param)
   fileSize = ftell (fp);
   rewind (fp);
 
-  content = (char*) malloc(fileSize+1);
-  fread(content, 1, fileSize, fp);
+  itoa(fileSize, fileSizeChar, 10);
+  send(sf->sock, fileSizeChar, 1024, 0);
 
-  send(sf->sock, content, fileSize, 0);
-  free(content);
-  free(sf);
+  while (sizeCheck < fileSize)
+  {
+    int read, sent;
+    read = fread(content, 1, readSize, fp);
+    sent = send(sf->sock, content, read, 0);
+    sizeCheck += sent;
+  }
+
   close(sf->sock);
+  free(sf);
   fclose(fp);
 }
 
