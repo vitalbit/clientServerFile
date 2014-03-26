@@ -42,7 +42,7 @@ void* ThreadFunc (void* param)
   fclose(fp);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   int sock, listener, rc;
   struct sockaddr_in addr;
@@ -70,6 +70,7 @@ int main()
 
   while(1)
   {
+      int pid;
       struct sockFile *sf;
       pthread_t thread_id;
 
@@ -86,9 +87,17 @@ int main()
 
       strcpy(sf[0].filename, filename);
 
-      rc = pthread_create(&thread_id, NULL, ThreadFunc, (void*)&sf[0]);
-      if (rc)
-          printf("Can't create thread!");
+      if (argv[1] == "t") 
+      {
+	rc = pthread_create(&thread_id, NULL, ThreadFunc, (void*)&sf[0]);
+      	if (rc)
+            printf("Can't create thread!");
+      }
+      else 
+      {
+	pid = fork();
+        if (pid == 0) ThreadFunc((void*)&sf[0]);
+      }
   }
   return 0;
 }
