@@ -5,8 +5,7 @@
 
 const int readSize = 1024;
 
-int main()
-{
+int main() {
     int sock, r;
     long fileSize, sizeCheck = 0;
     struct sockaddr_in addr;
@@ -17,8 +16,7 @@ int main()
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    if(sock < 0)
-    {
+    if (sock < 0) {
         perror("socket");
         exit(1);
     }
@@ -32,8 +30,7 @@ int main()
     addr.sin_port = htons(3425);
     addr.sin_addr.s_addr = inet_addr(ip);
 
-    if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-    {
+    if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror("connect");
         exit(2);
     }
@@ -41,10 +38,9 @@ int main()
     send(sock, filename, sizeof(filename), 0);
     recv(sock, fileSizeChar, sizeof(fileSizeChar), 0);
     fileSize = atoi(fileSizeChar);
-    fp = fopen("recvFile.txt", "w");
+    fp = fopen(filename, "w");
 
-    while (sizeCheck < fileSize)
-    {
+    while (sizeCheck < fileSize) {
     	r = recv(sock, content, sizeof(content), 0);
 	sizeCheck += r;
 	fwrite(content, 1, r, fp);

@@ -42,16 +42,14 @@ void* ThreadFunc (void* param)
   fclose(fp);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   int sock, listener, rc;
   struct sockaddr_in addr;
   char filename[1024];
   int bytes_read;
 
   listener = socket(AF_INET, SOCK_STREAM, 0);
-  if(listener < 0)
-  {
+  if (listener < 0) {
       perror("socket");
       exit(1);
   }
@@ -60,16 +58,14 @@ int main(int argc, char *argv[])
   addr.sin_port = htons(3425);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  if(bind(listener, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-  {
+  if (bind(listener, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
       perror("bind");
       exit(2);
   }
 
   listen(listener, 1);
 
-  while(1)
-  {
+  while (1) {
       int pid;
       struct sockFile *sf;
       pthread_t thread_id;
@@ -77,8 +73,7 @@ int main(int argc, char *argv[])
       sock = accept(listener, NULL, NULL);
       sf = (struct sockFile*) malloc (sizeof(struct sockFile));
 
-      if(sock < 0)
-      {
+      if(sock < 0) {
           perror("accept");
           exit(3);
       }
@@ -87,14 +82,12 @@ int main(int argc, char *argv[])
 
       strcpy(sf[0].filename, filename);
 
-      if (argv[1] == "t") 
-      {
+      if (argv[1] == "t") {
 	rc = pthread_create(&thread_id, NULL, ThreadFunc, (void*)&sf[0]);
       	if (rc)
             printf("Can't create thread!");
       }
-      else 
-      {
+      else {
 	pid = fork();
         if (pid == 0) ThreadFunc((void*)&sf[0]);
       }
